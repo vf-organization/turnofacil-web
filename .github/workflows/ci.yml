@@ -41,8 +41,8 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#       with:
-#          args: -Dsonar.qualitygate.wait=true     quitar una vez mejorado con test
+        with:
+          args: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') && '-Dsonar.qualitygate.wait=false' || '-Dsonar.qualitygate.wait=true' }}
 
       - name: Guardar reporte de cobertura
         if: always()
