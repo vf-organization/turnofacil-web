@@ -34,6 +34,38 @@ jobs:
       - name: Tests y cobertura
         run: npm run test:coverage
 
+      - name: Configurar credenciales AWS (solo push)
+        if: github.event_name == 'push'
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Publicar cobertura en CloudWatch
+        if: github.event_name == 'push'
+        run: |
+          COVERAGE=$(python3 - <<'PY'
+          lf = lh = 0
+          with open('coverage/lcov.info') as f:
+              for line in f:
+                  if line.startswith('LF:'):
+                      lf += int(line[3:])
+                  elif line.startswith('LH:'):
+                      lh += int(line[3:])
+          print(f"{lh * 100.0 / lf:.2f}" if lf else "0.00")
+          PY
+          )
+          echo "Cobertura Web: $COVERAGE%"
+          aws cloudwatch put-metric-data \
+            --namespace TurnoFacil/CI \
+            --metric-name CoveragePercent \
+            --value "$COVERAGE" \
+            --unit Percent \
+            --dimensions Service=turnofacil-web \
+            --region us-east-1
+
       - name: Build
         run: npm run build
 
