@@ -70,7 +70,7 @@ jobs:
         run: npm run build
 
       - name: Analisis de calidad (SonarCloud)
-        uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
